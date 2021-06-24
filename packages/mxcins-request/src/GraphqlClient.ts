@@ -16,10 +16,13 @@ export default class GraphQLClient {
 
   private options: RequestOptions;
 
-  constructor(uri: string, options: RequestOptions = {}) {
+  private throwOnErrors: boolean
+
+  constructor(uri: string, options: RequestOptions = {}, throwOnErrors=false) {
     this.uri = uri;
     this.core = new Core(options, builtins);
     this.options = options;
+    this.throwOnErrors = throwOnErrors
   }
 
   public use(m: RequestMiddleware): this {
@@ -39,6 +42,9 @@ export default class GraphQLClient {
         variables,
       },
     });
+    if (response.errors && this.throwOnErrors) {
+      throw new Error(JSON.stringify(response.errors))
+    }
     return response.data;
   }
 }
